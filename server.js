@@ -1,12 +1,14 @@
 /**
  * Created by zhibin_zhang_MacPro15 on 4/22/16.
  */
-var app = require('express')();
+var express = require('express');
+var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var path = require('path');
 
 // public folder to store assets
-
+app.use(express.static('public'));
 app.get('/', function(req, res){
   res.sendfile('views/index.html');
 });
