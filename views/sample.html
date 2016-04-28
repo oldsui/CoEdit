@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connected Clients</title>
+    <!--<meta charset="UTF-8"> -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script> 
+    <!--<script type="text/javascript" src="jquery.js"></script>  -->
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <textarea id="editor" style="height:200px;width:300px">
+        Thinknest Pragraph locking Test sample !
+    </textarea>
+
+    <script>
+    function msgReceived(msg){
+        //clientCounter.html(msg.clients);
+        document.getElementById('people').innerHTML=msg.uid;
+        //console.log(msg.id);  
+    }
+
+    var clientCounter;  
+
+    $(document).ready(function () {
+        clientCounter = $("#client_count");
+        var socket = io.connect(
+                         'http://localhost:5000', 
+                         {'sync disconnect on unload':true}
+                     ); 
+        var uId=prompt("enter your userId",'');
+        socket.emit('collabrator',uId);
+
+        socket.on('message', function(msg){
+            msgReceived(msg);
+        });
+
+        socket.on('online_collabs',function(data){  
+            $('#online_ppl').html(data);
+            clientCounter.html(data.length);
+        });
+
+        socket.on('remained_collabs',function(data){
+            $('#online_ppl').html(data);
+            clientCounter.html(data.length);
+        });
+
+        socket.on('note_collabs',function(data){
+            $('#note_colabs').html(data);
+        });
+
+        socket.on('updated_para',function(data){
+            //$('#editor').append(data);
+            document.getElementById('editor').innerHTML=data;
+        });
+
+        $('#editor').on('keydown',function(){
+            //var para=$('#editor').value;
+            var para= $('#editor').val();
+            //var para=document.querySelector('[contenteditable]');
+            // var text=para.textContent;
+            socket.emit('para',{paragraph:para});
+        });
+    });  
+    </script>
+
+    <p><span id="client_count">0</span> connected clients</p><br/>
+    <ul id="people"></ul>
+    <h3>Online Collaborators</h3>
+    <span id="online_ppl"></span> <br>
+    <h3>Note Collaborators</h3>
+    <span id="note_colabs"></span>
+</body>
+</html>
