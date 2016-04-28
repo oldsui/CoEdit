@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.15.0",
     "ejs": "^2.4.1",
     "socket.io": "^1.4.5"
   }
