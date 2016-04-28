@@ -7,10 +7,27 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
 
-// public folder to store assets
+//basic sign up form 
 app.use(express.static('public'));
 app.get('/', function(req, res){
   res.sendfile('views/index.html');
+});
+
+
+var bodyParser = require('body-parser');
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); 
+
+//
+//
+//redirect to editing page
+var sockets = {};
+app.post('/editing_page',function(req, res){
+  var usernname = req.body.username;
+  var documentID= req.body.documentID
+  res.sendfile('views/edite.html');
 });
 
 io.on('connection', function(socket){
