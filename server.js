@@ -20,14 +20,37 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 })); 
 
-//
+// database setup
+var sqlite3 = require('sqlite3').verbose();
+var db = new sqlite3.Database('Document.db');
+
+// Database initialization
+db.serialize(function() {
+
+  db.run("CREATE TABLE if not exists Document_table(Name TEXT) ");
+  
+});
+
+
+
 //
 //redirect to editing page
 var sockets = {};
 app.post('/editing_page',function(req, res){
   var usernname = req.body.username;
-  var documentID= req.body.documentID
-  res.sendfile('views/edite.html');
+  var documentID= req.body.documentID;
+  sqlRequest = "INSERT INTO Document_table (Name) " +
+               "VALUES(  'documentID' )",
+  db.run(sqlRequest, function(err) {
+    if(err !== null) {
+      console.log(err);
+    }
+    else {
+      res.sendfile('views/edite.html');
+    }
+  });
+  
+  
 });
 
 io.on('connection', function(socket){
@@ -37,9 +60,7 @@ io.on('connection', function(socket){
 		console.log(data.val + " " + data.pos);
 	    socket.broadcast.emit('edit_editor',data);
 	});
-//  socket.on('chat message', function(msg){
-//    io.emit('chat message', msg);
-//  });
+
 });
 
 http.listen(3000, function(){
