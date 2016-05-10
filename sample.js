@@ -12,7 +12,7 @@ var app = require('express')()
 server.listen(5000);
 
 app.get('/',function(req,res){
-    res.sendfile("views/sample.html");
+    res.sendfile("views/edite.html");
 });
 
 var activeClients = 0;
