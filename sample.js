@@ -9,7 +9,7 @@ var app = require('express')()
   , server = require('http').createServer(app)
   , io = require('socket.io').listen(server);
 
-server.listen(5000);
+server.listen(8000);
 
 app.get('/',function(req,res){
     res.sendfile("views/sample.html");
