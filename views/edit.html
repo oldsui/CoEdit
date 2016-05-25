@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+<head>
+    <title>Collaborate Edit </title>
+    <!--<meta charset="UTF-8"> -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script> 
+    <script src="/socket.io/socket.io.js"></script>
+    
+</head>
+<body>
+    
+    <p><span id="client_count">0</span> connected clients</p><br/>
+    <ul id="people"></ul>
+    <h3>Online Collaborators</h3>
+    <span id="online_ppl"></span> <br>
+
+
+    <textarea id="editor" style="height:500px;width:800px">
+        Testing string is used here to demo all kinds of OT.
+    </textarea>
+    <script>
+    
+    
+       
+
+    $(document).ready(function ()
+    {
+        //clientCounter = $("#Num_of_users");
+        var socket = io.connect('http://localhost:3000', {'sync disconnect on unload':true});
+    
+
+        // key-up event, triggers 'newdata' socket at server side
+	    $('#editor').on('keyup',function(key){
+		    
+			var value = String.fromCharCode(key.which); 
+         	//var newdata= $('#editor').val();
+			var position = $('#editor').prop("selectionStart");
+			//alert(value + " " + position);
+			socket.emit('newdata',{val:value, pos:position});
+        });
+
+
+
+
+
+
+        socket.on('message', function(msg){
+            msgReceived(msg);
+        });
+        
+
+
+        socket.on('online_collabs', function(data){  
+            $('#online_ppl').html(data);
+            clientCounter.html(data.length);
+        });
+
+
+
+
+        socket.on('edit_editor', function(data){
+            
+            //alert(data.val + " " + data.pos);
+            var position = data.pos;
+            var add_char = data.val;
+            var text = $('#editor').val();
+            var textbefore = text.substring(0, position - 1);
+            var textafter = text.substring(position - 1);
+            $('#editor').val(textbefore + add_char + textafter);
+            //$('#editor').html(data.val);
+            //document.getElementById('editor').innerHTML=data;
+        });
+     
+    
+    }); 
+
+
+
+
+
+
+    function msgReceived(msg){
+        //clientCounter.html(msg.clients);
+        //alert(msg.uid);
+        document.getElementById('people').innerHTML=msg.uid;
+        console.log(msg);  
+    }
+
+
+
+
+    </script>
+    
+</body>
+</html>

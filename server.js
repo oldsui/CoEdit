@@ -6,35 +6,42 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
+var Operation = require('./scripts/Operation.js')
+ 
 
-//basic sign up form 
+// app configuration
 app.use(express.static('public'));
-app.get('/', function(req, res){
-  res.sendfile('views/index.html');
-});
-
-
 var bodyParser = require('body-parser');
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 })); 
 
+
+
+
+
+
 // database setup
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('Document.db');
+var db = new sqlite3.Database('db/Document.db');
 
 // Database initialization
 db.serialize(function() {
-
-  db.run("CREATE TABLE if not exists Document_table(Name TEXT) ");
-  
+  db.run("CREATE TABLE if not exists DocTable (vid TEXT Operation) ");  
 });
 
 
 
-//
-//redirect to editing page
+// index.html: basic sign up form
+app.get('/', function(req, res){
+  res.sendfile('views/index.html');
+});
+
+
+
+
+// index.html submit form : redirect to editing page
 var sockets = {};
 app.post('/editing_page',function(req, res){
   var usernname = req.body.username;
@@ -46,22 +53,49 @@ app.post('/editing_page',function(req, res){
       console.log(err);
     }
     else {
-      res.sendfile('views/edite.html');
+      res.sendfile('views/edit.html', {});
     }
-  });
-  
-  
+  });   
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// client connected in event
 io.on('connection', function(socket){
     console.log('a new user connected');
-	socket.on('newdata', function(data){
-        
-		console.log(data.val + " " + data.pos);
+    clientConnect(socket);
+
+    socket.on('newdata', function(data){   
+		  console.log(data.val + " " + data.pos);
 	    socket.broadcast.emit('edit_editor',data);
-	});
+	  });
 
 });
+
+
+
+function clientConnect(socket){
+    //activeClients +=1;
+    var userSocketId=socket.id;
+    io.sockets.emit('message', {uid:userSocketId});
+}
+
+
+
+
+
 
 http.listen(3000, function(){
   console.log('listening on *:3000');
