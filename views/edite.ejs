@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+<head>
+    <title>Connected Clients</title>
+    <!--<meta charset="UTF-8"> -->
+	<script src="operation.js" type="text/javascript" ></script> 
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script> 
+    <!--<script type="text/javascript" src="jquery.js"></script>  -->
+    <script src="/socket.io/socket.io.js"></script>
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    
+</head>
+<body>
+    <h1> Username: <%=name%> </h1>
+	
+    <textarea id="editor" style = "margin: 50px; width: 90%; height: 500px;"><%=cur%></textarea>	  
+
+    <script>
+	//当我发出have_send = true时，你没接到的时候 you_received = false ，我收到了你的change
+    var array = new Array();
+	var version = 0;
+	var myname = '<%= name%>';
+	alert(myname);
+    $(document).ready(function ()
+    {
+        var socket = io.connect('http://localhost:3000');
+        socket.on('message', function(msg){
+            msgReceived(msg);
+        });
+		socket.emit('I_am_in');
+		alert('I am in');
+		socket.on('someone_in', function(msg){
+		    alert(msg.v);
+			if(version == 0)
+			{
+			    version = msg.v;
+				$('#editor').val(msg.txt);
+			}     
+		});
+
+		socket.on('edit_editor', function(data){
+		    
+			var name_of_sender = data.sender;
+			var position = data.pos;
+			var value = data.val;
+			var text = $('#editor').val();
+			if(name_of_sender == myname)
+			    array.shift();
+			else
+			{
+			    var text = $('#editor').val();
+				operation_to_deal = {position:position, value:value, strLen:text.length};
+				var result = Operation.importOps(operation_to_deal); // result is Operation;
+			    if(array.length != 0)
+				{
+					// OT with array;
+					for(var i = 0; i < array.length; i++)
+					{
+					    var A = Operation.importOps(array[i]);
+						result = Operation.importOps({position: position, value: value, strLen: array[i].strLen}); // TODO: importOps(changed)
+						result = Operation.transform(result, A)[0];
+					}
+					operation_to_deal = Operation.exportOps(result);
+					position = operation_to_deal.position;
+					value = operation_to_deal.value;
+		            result.displayOps();
+					alert("end transform");
+				}
+			    
+                text = result.apply(text); 
+                $('#editor').val(text);				
+                //  text = apply_operation.apply(text);  -> apply on text
+				/*if(value == "BackSpace")
+				{
+					var textbefore = text.substring(0, position);
+					var textafter = text.substring(position+1);
+					$('#editor').val(textbefore + textafter);
+				}
+				else
+				{
+					var add_char = value;			
+					var textbefore = text.substring(0, position - 1);
+					var textafter = text.substring(position - 1);
+					$('#editor').val(textbefore + add_char + textafter);
+				}*/     				
+				
+			}
+			
+			version += 1;
+/*			if(version_of_sender == version)
+			{
+			     //TODO: OT implementation
+				 // one example
+				 // 我改变的位置在你前面，由于你没接到我的改变，所以position需要+1
+				 if(my_change <= position)
+				      position += 1;
+			}
+			version += 1;
+			var text = $('#editor').val();
+			if(data.val == 8) // delete
+			{
+			    var textbefore = text.substring(0, position);
+				var textafter = text.substring(position+1);
+				$('#editor').val(textbefore + textafter);
+			}
+			else
+			{
+				var add_char = String.fromCharCode(data.val);			
+				var textbefore = text.substring(0, position - 1);
+				var textafter = text.substring(position - 1);
+				$('#editor').val(textbefore + add_char + textafter);
+			}
+*/
+			//$('#editor').html(data.val);
+			//document.getElementById('editor').innerHTML=data;
+		});
+    
+	    $('#editor').on('keyup',function(key){
+		    var text = $('#editor').val();
+			var strLen =  text.length;
+			if(key.keyCode < 37 || key.keyCode > 40)
+			{
+				var value;
+				var position = $('#editor').prop("selectionStart");
+				if(key.keyCode == 8 || key.keyCode == 46) // 8 == BackSpace, 46 == Delete
+				{
+				     value = "Del";
+					 strLen += 1;
+				}     
+				else 
+				{
+				     value = String.fromCharCode(key.keyCode).toLowerCase();
+					 position -= 1;
+					 strLen -= 1;
+				}     
+				
+				
+				//alert(value + " " + position);
+				array.push({position:position,value:value,strLen:strLen});
+				socket.emit('newdata',{val:value, pos:position, v:version, sender: myname});
+			}
+
+        });
+    
+    }); 
+    </script>
+    
+  
+</body>
+</html>
