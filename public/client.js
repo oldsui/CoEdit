@@ -14,7 +14,6 @@
 // applyClient: apply this client's operation to the text
 // applyServer: apply operation sent from server to the text
 // serverAck:
-// transformSelection:
 // resend:
 
 /*

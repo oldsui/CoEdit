@@ -39,7 +39,8 @@ and open the template in the editor.
             client = new Client(myname, '',  0);
 			socket = io.connect('http://localhost:3000');
 
-            // send operation in array every 500 ms
+            // send operation every 500 ms
+            /*
             var intervalID = setInterval(function(){
                 if(composed.ops.length > 0) {
                     client.applyClient(composed);
@@ -48,7 +49,7 @@ and open the template in the editor.
                 }
 
             }, 500);
-
+            */
 
             // notice server of this new client and start initialization
 			socket.emit('newClient');
@@ -115,6 +116,8 @@ and open the template in the editor.
 
                     console.log('This key creates an op: ');
                     op.displayOps();
+
+                    /*
                     if(composed.ops.length == 0){
                         composed = op;
                     }
@@ -125,6 +128,8 @@ and open the template in the editor.
                     console.log('Accumulated operations: ');
                     composed.displayOps();
 
+                    */
+                    client.applyClient(op);
 				}
 
                 else {

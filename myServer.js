@@ -43,10 +43,8 @@ app.post('/editing_page',function(req, res){
 });
 
 
-
 io.on('connection', function(socket){
     console.log('a new connection detected');
-
 
 
     socket.on('newClient', function(){
@@ -54,8 +52,6 @@ io.on('connection', function(socket){
         // send the latest version number and text to the new client
 		io.sockets.emit('initClient', {v:version, txt: text});
 	})
-
-
 
 
 
@@ -67,7 +63,7 @@ io.on('connection', function(socket){
 
         console.log('sender: '+sender);
         //operation.display();
-        // find all the operations server has stored but this sender hasn't applied
+        // find all the operations server has stored but this sender hasn't received
         var previousOperations = operations.slice(sender_version);
         // transform the sender's operation against all these operations
         for (var i = 0; i < previousOperations.length; i++) {
