@@ -32,7 +32,6 @@ and open the template in the editor.
 		console.log('uid: ' + myname);
 
         var cnt = 0;
-        var composed = new Operation();
 
 
 		$(document).ready(function () {
@@ -79,9 +78,9 @@ and open the template in the editor.
 					client.serverAck();
 				}
 
-				// when the incoming operation is not the operation the client has sent to server
+				// when the incoming operation is not the operation the client has sent to server, simply apply it to the client's document
 				else {
-					client.applyServer(data.v, data.op);
+					client.applyServer(data.op);
 				}
 
                 // display modified text

@@ -51,25 +51,28 @@
 
 
 
-    // Call this method when the user changes the document and SENDS the operation to server
+    // Only need to call these methods at higher level
+    // exact procedure will be called by the state that the client is in
+
+    // when client mutates the local document
     Client.prototype.applyClient = function (operation) {
         this.setState(this.state.applyClient(this, operation));             // current state will invoke corresponding procedure
     };
 
-    // Call this method when RECEIVING a new operation from the server
+    // when RECEIVING an operation from the server
     Client.prototype.applyServer = function (operation) {
         this.version ++;
         this.setState(this.state.applyServer(this, operation));
     };
 
-
+    // when find out that the operation that the client has sent to the server is accepted by the server
     Client.prototype.serverAck = function () {
         this.version ++;
         this.setState(this.state.serverAck(this));
     };
 
 
-
+    // ???
     Client.prototype.serverReconnect = function () {
         if (typeof this.state.resend === 'function') { this.state.resend(this); }
     };
@@ -77,7 +80,7 @@
 
 
 
-    
+    // low-level functions that will be invoked by the states
     
     Client.prototype.sendOperation = function (operation) {
         //TODO: invoke socket to send operation to server
