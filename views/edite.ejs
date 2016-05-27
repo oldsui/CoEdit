@@ -27,18 +27,28 @@ and open the template in the editor.
 
 		var myname = '<%=UID%>';
 		var client;
+		var socket;
 
 		console.log('uid: ' + myname);
 
         var cnt = 0;
-        var composed;
+        var composed = new Operation();
 
 
 		$(document).ready(function () {
             client = new Client(myname, '',  0);
-			var socket = io.connect('http://localhost:3000');
+			socket = io.connect('http://localhost:3000');
 
-            //var intervalID = setInterval(function(){console.log(cnt); cnt += 1;}, 500); // send operation in array every 500 ms
+            // send operation in array every 500 ms
+            var intervalID = setInterval(function(){
+                if(composed.ops.length > 0) {
+                    client.applyClient(composed);
+                    console.log('ApplyClient !');
+                    composed = new Operation();
+                }
+
+            }, 500);
+
 
             // notice server of this new client and start initialization
 			socket.emit('newClient');
@@ -81,7 +91,7 @@ and open the template in the editor.
 
 
 
-            // when a key is pressed and released, create an operation for it and invoke client.applyClient(operation)
+            // when a key is released, create an operation for it and invoke client.applyClient(operation)
 			$('#editor').on('keyup',function(key){
                 console.log('A key is pressed !');
 				var text = $('#editor').val();
@@ -105,7 +115,7 @@ and open the template in the editor.
 
                     console.log('This key creates an op: ');
                     op.displayOps();
-                    if(typeof composed === 'undefined'){
+                    if(composed.ops.length == 0){
                         composed = op;
                     }
                     else {
@@ -114,7 +124,6 @@ and open the template in the editor.
                     }
                     console.log('Accumulated operations: ');
                     composed.displayOps();
-					//client.applyClient(op);
 
 				}
 

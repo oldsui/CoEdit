@@ -5,7 +5,7 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var ot = require('./public/operation.js');
+var ot = require('./ot_server.js');
 
 app.set('view engine', 'ejs');
 
@@ -24,10 +24,13 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 }));
 
 
+
+
+
 // server's properties
 var version = 0;                                        // version of last commited text
-var text = "0123456789";                   // last commited text in the edit area
-
+var text = "0123456789";                                // last commited text in the edit area
+var operations = [];                                    // operation history
 
 //redirect to editing page
 var sockets = {};
@@ -42,7 +45,7 @@ app.post('/editing_page',function(req, res){
 
 
 io.on('connection', function(socket){
-    console.log('a new user connected');
+    console.log('a new connection detected');
 
 
 
@@ -56,24 +59,27 @@ io.on('connection', function(socket){
 
 
 
-    // receiving operations from a sender data:  {op:operation, v:clientVersion, sender: client.uid}
+    // receiving operations from a sender data:  {op:operation, v:client.Version, sender: client.uid}
 	socket.on('newClientOp', function(data){
 		var sender_version = data.v;            // latest version received by the sender from the server
 		var operation = data.op;
 		var sender = data.uid;
 
+        console.log('sender: '+sender);
+        //operation.display();
         // find all the operations server has stored but this sender hasn't applied
-        var previousOperations = this.operations.slice(sender_version);
+        var previousOperations = operations.slice(sender_version);
         // transform the sender's operation against all these operations
         for (var i = 0; i < previousOperations.length; i++) {
-            operation = ot.transform(operation, previousOperations[i])[0];
+            operation = operation.constructor.transform(operation, previousOperations[i])[0];
         }
+
 
 
         // apply the transformed operation on the document.
         text = operation.apply(this.document);
         // Store operation in history and increment version
-        array.push(operation);
+        //operations.push(operation);
         version += 1;
 
 		console.log("current text is : " + text);

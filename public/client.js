@@ -17,6 +17,13 @@
 // transformSelection:
 // resend:
 
+/*
+    var io=document.createElement('script');
+    io.setAttribute("type","text/javascript");
+    io.setAttribute("src", "socket.io/socket.io.js");
+
+    var socket = io.connect('http://localhost:3000');
+*/
 
 
     // Client constructor
@@ -52,13 +59,13 @@
 
     // Call this method when RECEIVING a new operation from the server
     Client.prototype.applyServer = function (operation) {
+        this.version ++;
         this.setState(this.state.applyServer(this, operation));
     };
 
 
-    // ****** ????
     Client.prototype.serverAck = function () {
-        this.version++;
+        this.version ++;
         this.setState(this.state.serverAck(this));
     };
 
@@ -74,12 +81,15 @@
     
     
     Client.prototype.sendOperation = function (operation) {
-        console.log('sendOperation is called but not executed! ');
-        //socket.emit('newClientOp', {op:operation, v:clientVersion, sender: client.uid});
+        //TODO: invoke socket to send operation to server
+        console.log('sendOperation is called trying to execute! ');
+        socket.emit('newClientOp', {op:operation, v:client.Version, sender: client.uid});
     };
 
     Client.prototype.applyOperation = function (operation) {
-        throw new Error("Not implemented yet");
+        console.log('Client.applyOperaion is called !');
+        this.doc = operation.apply(this.doc);
+        $('#editor').val(this.doc);
     };
 
 
@@ -99,6 +109,7 @@
     // When the user makes an edit, send the operation to the server and
     // switch to the 'AwaitingConfirm' state
     Synchronized.prototype.applyClient = function (client, operation) {
+        console.log('Sync -> AwaitingConfirm');
         client.sendOperation(operation);
         return new AwaitingConfirm(operation);
     };
@@ -138,6 +149,7 @@
     AwaitingConfirm.prototype.applyClient = function (client, operation) {
         // When the user makes an edit, don't send the operation immediately,
         // instead switch to 'AwaitingWithBuffer' state
+        console.log('AwaitingConfirm -> AwaitingWithBuffer');
         return new AwaitingWithBuffer(this.outstanding, operation);
     };
 
@@ -154,12 +166,15 @@
         //  current document)
         var pair = operation.constructor.transform(this.outstanding, operation);
         client.applyOperation(pair[1]);
+
+        console.log('applied server, transformed outstanding, AwaitingConfirm -> AwaitingConfirm');
         return new AwaitingConfirm(pair[0]);
     };
 
     AwaitingConfirm.prototype.serverAck = function (client) {
         // The client's operation has been acknowledged
         // => switch to synchronized state
+        console.log('AwaitingConfirm -> Sync');
         return synchronized_;
     };
 
@@ -193,6 +208,7 @@
     AwaitingWithBuffer.prototype.applyClient = function (client, operation) {
         // Compose the user's changes onto the buffer
         var newBuffer = this.buffer.compose(operation);
+        console.log('AwaitingWithBuffer -> AwaitingWithBuffer');
         return new AwaitingWithBuffer(this.outstanding, newBuffer);
     };
 
@@ -218,6 +234,7 @@
         var pair1 = transform(this.outstanding, operation);
         var pair2 = transform(this.buffer, pair1[1]);
         client.applyOperation(pair2[1]);
+        console.log('AwaitingWithBuffer -> AwaitingWithBuffer');
         return new AwaitingWithBuffer(pair1[0], pair2[0]);
     };
 
@@ -225,6 +242,7 @@
         // The pending operation has been acknowledged
         // => send buffer
         client.sendOperation(client.version, this.buffer);
+        console.log('ServerAck, AwaitingWithBuffer -> AwaitingConfirm');
         return new AwaitingConfirm(this.buffer);
     };
 
