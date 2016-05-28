@@ -38,17 +38,9 @@ and open the template in the editor.
             client = new Client(myname, '',  0);
 			socket = io.connect('http://localhost:3000');
 
-            // send operation every 500 ms
-            /*
-            var intervalID = setInterval(function(){
-                if(composed.ops.length > 0) {
-                    client.applyClient(composed);
-                    console.log('ApplyClient !');
-                    composed = new Operation();
-                }
 
-            }, 500);
-            */
+
+
 
             // notice server of this new client and start initialization
 			socket.emit('newClient');
@@ -68,19 +60,29 @@ and open the template in the editor.
 
 
 
-			// when receiving an operation from the server, data: {op: operation, uid: sender, v: version}
+			// when receiving an operation from the server, data: {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, uid: sender, v: version}
 			socket.on('edit_editor', function(data) {
 
 				// if the incoming operation is THE operation the client has sent to server
 				// it means the client's outstanding operation is accepted by the server
 				// perform client.serverAck
+
+				console.log('Received an operation from server !');
+				console.log('uid: '+data.uid);
+				console.log('version: '+data.v);
+
+				operation = new Operation(data.ops, data.initLen, data.finalLen);
+				operation.displayOps();
+
 				if (data.uid === client.uid) {
+					console.log('The received operaiton is previously sent by me ! So perform serverAck() !');
 					client.serverAck();
 				}
 
 				// when the incoming operation is not the operation the client has sent to server, simply apply it to the client's document
 				else {
-					client.applyServer(data.op);
+					console.log('The received operaiton is not previously sent by me ! So perform applyServer() !');
+					client.applyServer(operation);
 				}
 
                 // display modified text
@@ -116,18 +118,7 @@ and open the template in the editor.
                     console.log('This key creates an op: ');
                     op.displayOps();
 
-                    /*
-                    if(composed.ops.length == 0){
-                        composed = op;
-                    }
-                    else {
-                        console.log('composed.finalLen = '+composed.finalLen + '; op.intLen = '+op.initLen);
-                        composed.compose(op);
-                    }
-                    console.log('Accumulated operations: ');
-                    composed.displayOps();
 
-                    */
                     client.applyClient(op);
 				}
 

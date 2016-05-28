@@ -1,11 +1,28 @@
-	// Constructor
-	function Operation (){
-		
-		this.ops = [];              // operations: ops[i] data type: int/string
-        this.initLen = 0;			// string length before applying ops
-		this.finalLen = 0;			// string length after applying ops
-	};
 
+	// Constructor
+	function Operation (ops, initLen, finalLen) {
+		if ( typeof ops == 'undefined' ) {
+			this.ops = [];
+		}
+		else {
+			this.ops = ops;
+		}
+
+		if ( typeof initLen == 'undefined' ) {
+			this.initLen = 0;
+		}
+		else {
+			this.initLen = initLen;
+		}
+
+		if ( typeof finalLen == 'undefined' ) {
+			this.finalLen = 0;
+		}
+		else {
+			this.finalLen = finalLen;
+		}
+
+	}
 
     // Operation categories
     var isRetain = Operation.isRetain = function (op) {

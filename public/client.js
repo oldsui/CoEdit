@@ -83,9 +83,8 @@
     // low-level functions that will be invoked by the states
     
     Client.prototype.sendOperation = function (operation) {
-        //TODO: invoke socket to send operation to server
         console.log('sendOperation is called trying to execute! ');
-        socket.emit('newClientOp', {op:operation, v:client.Version, sender: client.uid});
+        socket.emit('newClientOp', {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid});
     };
 
     Client.prototype.applyOperation = function (operation) {
@@ -136,9 +135,6 @@
 
 
 
-
-
-
     // In the 'AwaitingConfirm' state, there's one operation the client has sent
     // to the server and is still waiting for an acknowledgement.
     function AwaitingConfirm (outstanding) {
@@ -169,7 +165,7 @@
         var pair = operation.constructor.transform(this.outstanding, operation);
         client.applyOperation(pair[1]);
 
-        console.log('applied server, transformed outstanding, AwaitingConfirm -> AwaitingConfirm');
+        console.log('AwaitingConfirm -> AwaitingConfirm');
         return new AwaitingConfirm(pair[0]);
     };
 
@@ -185,7 +181,7 @@
     AwaitingConfirm.prototype.resend = function (client) {
         // The confirm didn't come because the client was disconnected.
         // Now that it has reconnected, we resend the outstanding operation.
-        client.sendOperation(client.version, this.outstanding);
+        client.sendOperation(this.outstanding);
     };
 
 
@@ -243,7 +239,7 @@
     AwaitingWithBuffer.prototype.serverAck = function (client) {
         // The pending operation has been acknowledged
         // => send buffer
-        client.sendOperation(client.version, this.buffer);
+        client.sendOperation(this.buffer);
         console.log('ServerAck, AwaitingWithBuffer -> AwaitingConfirm');
         return new AwaitingConfirm(this.buffer);
     };
@@ -251,7 +247,7 @@
     AwaitingWithBuffer.prototype.resend = function (client) {
         // The confirm didn't come because the client was disconnected.
         // Now that it has reconnected, we resend the outstanding operation.
-        client.sendOperation(client.version, this.outstanding);
+        client.sendOperation(this.outstanding);
     };
 
 
