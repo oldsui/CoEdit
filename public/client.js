@@ -51,25 +51,28 @@
 
 
 
-    // Call this method when the user changes the document and SENDS the operation to server
+    // Only need to call these methods at higher level
+    // exact procedure will be called by the state that the client is in
+
+    // when client mutates the local document
     Client.prototype.applyClient = function (operation) {
         this.setState(this.state.applyClient(this, operation));             // current state will invoke corresponding procedure
     };
 
-    // Call this method when RECEIVING a new operation from the server
+    // when RECEIVING an operation from the server
     Client.prototype.applyServer = function (operation) {
         this.version ++;
         this.setState(this.state.applyServer(this, operation));
     };
 
-
+    // when find out that the operation that the client has sent to the server is accepted by the server
     Client.prototype.serverAck = function () {
         this.version ++;
         this.setState(this.state.serverAck(this));
     };
 
 
-
+    // ???
     Client.prototype.serverReconnect = function () {
         if (typeof this.state.resend === 'function') { this.state.resend(this); }
     };
@@ -77,12 +80,11 @@
 
 
 
-    
+    // low-level functions that will be invoked by the states
     
     Client.prototype.sendOperation = function (operation) {
-        //TODO: invoke socket to send operation to server
         console.log('sendOperation is called trying to execute! ');
-        socket.emit('newClientOp', {op:operation, v:client.Version, sender: client.uid});
+        socket.emit('newClientOp', {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid});
     };
 
     Client.prototype.applyOperation = function (operation) {
@@ -133,9 +135,6 @@
 
 
 
-
-
-
     // In the 'AwaitingConfirm' state, there's one operation the client has sent
     // to the server and is still waiting for an acknowledgement.
     function AwaitingConfirm (outstanding) {
@@ -166,7 +165,7 @@
         var pair = operation.constructor.transform(this.outstanding, operation);
         client.applyOperation(pair[1]);
 
-        console.log('applied server, transformed outstanding, AwaitingConfirm -> AwaitingConfirm');
+        console.log('AwaitingConfirm -> AwaitingConfirm');
         return new AwaitingConfirm(pair[0]);
     };
 
@@ -182,7 +181,7 @@
     AwaitingConfirm.prototype.resend = function (client) {
         // The confirm didn't come because the client was disconnected.
         // Now that it has reconnected, we resend the outstanding operation.
-        client.sendOperation(client.version, this.outstanding);
+        client.sendOperation(this.outstanding);
     };
 
 
@@ -240,7 +239,7 @@
     AwaitingWithBuffer.prototype.serverAck = function (client) {
         // The pending operation has been acknowledged
         // => send buffer
-        client.sendOperation(client.version, this.buffer);
+        client.sendOperation(this.buffer);
         console.log('ServerAck, AwaitingWithBuffer -> AwaitingConfirm');
         return new AwaitingConfirm(this.buffer);
     };
@@ -248,7 +247,7 @@
     AwaitingWithBuffer.prototype.resend = function (client) {
         // The confirm didn't come because the client was disconnected.
         // Now that it has reconnected, we resend the outstanding operation.
-        client.sendOperation(client.version, this.outstanding);
+        client.sendOperation(this.outstanding);
     };
 
 

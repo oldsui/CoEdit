@@ -5,7 +5,7 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var ot = require('./ot_server.js');
+var Operation = require('./operation.js');
 
 app.set('view engine', 'ejs');
 
@@ -44,9 +44,18 @@ app.post('/editing_page',function(req, res){
 
 
 io.on('connection', function(socket){
+
+
+    // test Operation class
+    var t = new Operation();
+
+    t.displayOps();
+    console.log(t.initLen);
+    console.log(t.finalLen);
+    t.insert('abcdefg').retain(10);
+
+
     console.log('a new connection detected');
-
-
     socket.on('newClient', function(){
 		console.log("A new client asks for the latest version! ");
         // send the latest version number and text to the new client
@@ -55,25 +64,29 @@ io.on('connection', function(socket){
 
 
 
-    // receiving operations from a sender data:  {op:operation, v:client.Version, sender: client.uid}
+
+    // receiving operations from a sender data:  {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid}
 	socket.on('newClientOp', function(data){
 		var sender_version = data.v;            // latest version received by the sender from the server
-		var operation = data.op;
-		var sender = data.uid;
+		var sender = data.sender;
+
+        var operation = new Operation(data.ops, data.initLen, data.finalLen);
 
         console.log('sender: '+sender);
-        //operation.display();
+        console.log('version: '+sender_version);
+        operation.displayOps();
         // find all the operations server has stored but this sender hasn't received
         var previousOperations = operations.slice(sender_version);
         // transform the sender's operation against all these operations
         for (var i = 0; i < previousOperations.length; i++) {
+            console.log('Transforming:');
             operation = operation.constructor.transform(operation, previousOperations[i])[0];
         }
 
 
 
         // apply the transformed operation on the document.
-        text = operation.apply(this.document);
+        text = operation.apply(text);
         // Store operation in history and increment version
         //operations.push(operation);
         version += 1;
@@ -82,7 +95,7 @@ io.on('connection', function(socket){
 
 
         // after updating server, broadcast this latest operation to all clients
-		io.sockets.emit('edit_editor', {op: operation, uid: sender, v: version});
+		io.sockets.emit('edit_editor', {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, uid: sender, v: version});
 	});
 
 
