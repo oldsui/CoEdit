@@ -83,11 +83,11 @@ and open the template in the editor.
 				else {
 					console.log('The received operaiton is not previously sent by me ! So perform applyServer() !');
 					client.applyServer(operation);
+					// display modified text
+					$('#editor').val(client.doc);
 				}
 
-                // display modified text
-				$('#editor').val(client.doc);
-
+				
 
 			});
 
