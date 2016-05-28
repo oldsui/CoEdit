@@ -88,7 +88,8 @@
     };
 
     Client.prototype.applyOperation = function (operation) {
-        console.log('Client.applyOperaion is called !');
+        console.log('Client.applyOperaion is called ! The operation from server is: ');
+        operation.displayOps();
         this.doc = operation.apply(this.doc);
         $('#editor').val(this.doc);
     };
@@ -110,14 +111,15 @@
     // When the user makes an edit, send the operation to the server and
     // switch to the 'AwaitingConfirm' state
     Synchronized.prototype.applyClient = function (client, operation) {
-        console.log('Sync -> AwaitingConfirm');
         client.sendOperation(operation);
+        console.log('Sync -> AwaitingConfirm');
         return new AwaitingConfirm(operation);
     };
 
     // When we receive a new operation from the server, the operation can be
     // simply applied to the current document
     Synchronized.prototype.applyServer = function (client, operation) {
+        console.log('sync applyServer !');
         client.applyOperation(operation);
         return this;
     };
@@ -162,6 +164,8 @@
         //  (can be applied  \/
         //  to the client's
         //  current document)
+
+        console.log('awaitingConfirm applyServer !');
         var pair = operation.constructor.transform(this.outstanding, operation);
         client.applyOperation(pair[1]);
 
@@ -183,8 +187,6 @@
         // Now that it has reconnected, we resend the outstanding operation.
         client.sendOperation(this.outstanding);
     };
-
-
 
 
 
@@ -228,6 +230,7 @@
         // document
         //
         // *: pair1[1]
+        console.log('awaitingConfirm applyServer !');
         var transform = operation.constructor.transform;
         var pair1 = transform(this.outstanding, operation);
         var pair2 = transform(this.buffer, pair1[1]);

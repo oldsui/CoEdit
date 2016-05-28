@@ -56,10 +56,10 @@ io.on('connection', function(socket){
 
 
     console.log('a new connection detected');
-    socket.on('newClient', function(){
+    socket.on('newClient', function(data){
 		console.log("A new client asks for the latest version! ");
         // send the latest version number and text to the new client
-		io.sockets.emit('initClient', {v:version, txt: text});
+		io.sockets.emit('initClient', {uid:data.uid, v:version, txt: text});
 	})
 
 
@@ -67,6 +67,11 @@ io.on('connection', function(socket){
 
     // receiving operations from a sender data:  {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid}
 	socket.on('newClientOp', function(data){
+
+        for (var i = 0; i < operations.length; i++) {
+            operations[i].displayOps();
+        }
+
 		var sender_version = data.v;            // latest version received by the sender from the server
 		var sender = data.sender;
 
@@ -88,7 +93,7 @@ io.on('connection', function(socket){
         // apply the transformed operation on the document.
         text = operation.apply(text);
         // Store operation in history and increment version
-        //operations.push(operation);
+        operations.push(operation);
         version += 1;
 
 		console.log("current text is : " + text);
