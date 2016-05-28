@@ -1,7 +1,7 @@
 module.exports = Operation;
 
 
-	// Constructor
+	// Constructor with default parameters ops = [], initLen = 0, finalLen = 0
 	function Operation (ops, initLen, finalLen) {
 		if ( typeof ops == 'undefined' ) {
 			this.ops = [];
