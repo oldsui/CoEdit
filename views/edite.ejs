@@ -139,6 +139,13 @@ and open the template in the editor.
                     //input.selectionStart = 3;
                     //input.selectionEnd = 3;
 				}
+				// 32: space
+				else if (key.keyCode == 32) {
+                    op.retain(position).insert(' ').retain(strLen-position);
+					console.log('This key creates an op: ');
+                    op.displayOps();
+                    client.applyClient(op);
+				}
 
                 // symbols and control keys
                 else {

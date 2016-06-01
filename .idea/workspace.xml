@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b13713ab-1557-4938-a122-69bd7d9b9094" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/operation.js" afterPath="$PROJECT_DIR$/operation.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/operation.js" afterPath="$PROJECT_DIR$/public/operation.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/views/edite.ejs" afterPath="$PROJECT_DIR$/views/edite.ejs" />
     </list>
     <ignored path="cs223.iws" />
@@ -40,8 +37,8 @@
       <file leaf-file-name="edite.ejs" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/views/edite.ejs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="394">
-              <caret line="124" column="74" selection-start-line="124" selection-start-column="74" selection-end-line="124" selection-end-column="74" />
+            <state relative-caret-position="709">
+              <caret line="153" column="0" selection-start-line="153" selection-start-column="0" selection-end-line="153" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -712,8 +709,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/views/edite.ejs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="394">
-          <caret line="124" column="74" selection-start-line="124" selection-start-column="74" selection-end-line="124" selection-end-column="74" />
+        <state relative-caret-position="709">
+          <caret line="153" column="0" selection-start-line="153" selection-start-column="0" selection-end-line="153" selection-end-column="0" />
           <folding />
         </state>
       </provider>
