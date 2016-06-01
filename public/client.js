@@ -1,4 +1,4 @@
-// modified client.js of ot lib
+// modified client.js based on ot lib
 
 // A client:
 // member data - uid:       user id
@@ -79,7 +79,6 @@
 
 
 
-
     // low-level functions that will be invoked by the states
     
     Client.prototype.sendOperation = function (operation) {
@@ -94,8 +93,6 @@
         this.doc = operation.apply(this.doc);
         $('#editor').val(this.doc);
     };
-
-
 
 
 
@@ -131,7 +128,6 @@
     
     // Singleton
     var synchronized_ = new Synchronized();
-
 
 
 
@@ -188,8 +184,6 @@
         // Now that it has reconnected, we resend the outstanding operation.
         client.sendOperation(this.outstanding);
     };
-
-
 
 
 

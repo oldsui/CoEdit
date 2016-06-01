@@ -7,14 +7,9 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var Operation = require('./operation.js');
 
+
+
 app.set('view engine', 'ejs');
-
-//basic sign up form
-app.use(express.static('public'));
-app.get('/', function(req, res){
-  res.sendfile('views/index.html');
-});
-
 app.locals.resoucePath = "/";
 
 var bodyParser = require('body-parser');
@@ -26,13 +21,23 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 
 
-
-// server's properties
+// data structures the server is maintaining
 var version = 0;                                        // version of last commited text
 var text = "0123456789";                                // last commited text in the edit area
 var operations = [];                                    // operation history
 
-//redirect to editing page
+
+
+
+
+//index: basic sign up form
+app.use(express.static('public'));
+app.get('/', function(req, res){
+  res.sendfile('views/index.html');
+});
+
+
+//redirect the login form to the editing page
 var sockets = {};
 app.post('/editing_page',function(req, res){
   var uid = req.body.username;
@@ -43,11 +48,15 @@ app.post('/editing_page',function(req, res){
 });
 
 
+
+
+// while in connection, accepts operations from clients, update text at server and broadcast the change
 io.on('connection', function(socket){
 
     console.log('a new connection detected');
 
 
+    // when a newly joined in client notifies the server, asking for the latest text for initialization
     socket.on('newClient', function(data){
 		console.log("A new client asks for the latest version! ");
         // send the latest version number and text to the new client
@@ -57,18 +66,22 @@ io.on('connection', function(socket){
 
 
 
-    // receiving operations from a sender data:  {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid}
+    // when the server receives an operation from a client
+    // data format:  {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid}
 	socket.on('newClientOp', function(data){
 
-
 		var sender_version = data.v;            // latest version received by the sender from the server
-		var sender = data.sender;
+		var sender = data.sender;               // sender name
 
         var operation = new Operation(data.ops, data.initLen, data.finalLen);
 
+
+        // for debug use
         console.log('sender: '+sender);
         console.log('version: '+sender_version);
         operation.displayOps();
+
+
         // find all the operations server has stored but this sender hasn't received
         var previousOperations = operations.slice(sender_version);
         // transform the sender's operation against all these operations
@@ -77,14 +90,18 @@ io.on('connection', function(socket){
             operation = operation.constructor.transform(operation, previousOperations[i])[0];
         }
 
+        // for debug use
         console.log('text before applying op is: '+text);
 
+        
         // apply the transformed operation on the document.
         text = operation.apply(text);
         // Store operation in history and increment version
         operations.push(operation);
         version += 1;
 
+
+        // for debug use
 		console.log("text after applying op is : " + text);
 
 
