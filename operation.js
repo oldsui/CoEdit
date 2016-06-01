@@ -142,7 +142,9 @@ module.exports = Operation;
 
     Operation.prototype.apply = function (str) {
 	    if (str.length !== this.initLen) {
-	      throw new Error("Initial length mismatch !");
+			console.log('str.length == '+str.length);
+			console.log('initLen == '+this.initLen);
+			throw new Error("Initial length mismatch !");
 	    }
 
 	    var newStr = [], strCnt = 0;

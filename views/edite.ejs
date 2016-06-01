@@ -23,26 +23,25 @@ and open the template in the editor.
 
     <script>
 
-
-
 		var myname = '<%=UID%>';
-		var client;
-		var socket;
-
+		var client;                         // instance of the current client
+		var socket;                         // global variable, to be accessed in client.js
+        var input = document.getElementById ("editor");
 		console.log('uid: ' + myname);
 
-        var cnt = 0;
 
 
 		$(document).ready(function () {
-            client = new Client(myname, '',  0);
-			socket = io.connect('http://169.234.90.168:3000');
 
+            // ========== initialization ==========
+            socket = io.connect('http://localhost:3000');
 
-            // notice server of this new client and start initialization
+            client = new Client(myname, '',  0);                        // default constructor
+
+            // notify server of this new client and requesting the latest text
 			socket.emit('newClient', {uid: myname});
 
-			// initialization: sync with server
+			// initialization with the text received from server
 			socket.on('initClient', function(data) {					// data {uid:data.uid, v:version, txt: text}
 
 				if (data.uid == myname) {
@@ -59,7 +58,11 @@ and open the template in the editor.
 
 
 
-			// when receiving an operation from the server, data: {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, uid: sender, v: version}
+            // ========== receiving an operation from server ==========
+            // TODO: selection transform
+
+			// when receiving an operation from the server, check uid to apply it to local text or perform serverAck
+            // data: {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, uid: sender, v: version}
 			socket.on('edit_editor', function(data) {
 
 				// if the incoming operation is THE operation the client has sent to server
@@ -78,7 +81,7 @@ and open the template in the editor.
 					client.serverAck();
 				}
 
-				// when the incoming operation is not the operation the client has sent to server, simply apply it to the client's document
+				// when the incoming op is not the op that the client just sent to server, simply apply it to the client's document
 				else {
 					console.log('The received operaiton is not previously sent by me ! So perform applyServer() !');
 					client.applyServer(operation);
@@ -92,48 +95,53 @@ and open the template in the editor.
 
 
 
+            // ========== handle local mutations ==========
+
+
             // when a key is released, create an operation for it and invoke client.applyClient(operation)
-			$('#editor').on('keyup',function(key){
+            // chrome follow IE keycode: http://unixpapa.com/js/key.html
+			// keycode: https://css-tricks.com/snippets/javascript/javascript-keycodes/
+			$('#editor').on('keydown',function(key){
                 console.log('A key is pressed !');
 
 				client.setDoc($('#editor').val());
 				var strLen =  client.doc.length;
-				if(key.keyCode < 37 || key.keyCode > 40)
+
+				// if delete a char: 8 == BackSpace, 46 == Delete
+				if(key.keyCode == 8 || key.keyCode == 46)
+				{
+					 op.retain(position+1).delete(1).retain(strLen-position);
+				}
+				// if insert a char
+				// 9:tab; 13: enter; 48-57: 0-9; 65-90: a-z;
+				else if(key.keyCode == 9 || key.keyCode == 13 || (key.keyCode > 40 && key.keyCode < 91))
 				{
 					var op = new Operation();
 					var position = $('#editor').prop("selectionStart");
 
-                    // if delete a char
-					if(key.keyCode == 8 || key.keyCode == 46) // 8 == BackSpace, 46 == Delete
-                    {
-                         op.retain(position).delete(1).retain(strLen-position);
-					}
-                    // if insert a char
-					else
-					{
-						 value = String.fromCharCode(key.keyCode).toLowerCase();
-                         op.retain(position-1).insert(value).retain(strLen-position);
-					}
+                    value = String.fromCharCode(key.keyCode).toLowerCase();
+                    op.retain(position).insert(value).retain(strLen-position);
+
 
                     console.log('This key creates an op: ');
                     op.displayOps();
 
 
                     client.applyClient(op);
+                    //input.selectionStart = 3;
+                    //input.selectionEnd = 3;
 				}
 
+                // symbols and control keys
                 else {
+                    //input.selectionStart = 3;
+                    //input.selectionEnd = 3;
+
                     console.log('Pressed key is not yet supported !');
                 }
 
 
 			});
-
-
-
-
-
-
 
 
 		});
