@@ -59,7 +59,7 @@
 	    if (typeof n !== 'number') {
 	      throw new Error("Retain expects a integer >= 0!");
 	    }
-	    if (n === 0) { 
+	    if (n <= 0) {
 	    	return this; 
 	    }
 	    this.initLen += n;
@@ -80,7 +80,7 @@
 	        throw new Error("insert expects a string");
 	    }
 
-	    if (str === '') { 
+	    if (str == '') {
 	        return this; 
 	    }
 	    
@@ -114,7 +114,7 @@
         if (typeof n !== 'number') {
             throw new Error("delete expects an integer >= 0");
         }
-        if (n === 0) {
+        if (n <= 0) {
             return this; 
         }
 
