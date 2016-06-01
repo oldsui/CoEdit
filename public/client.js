@@ -90,6 +90,7 @@
     Client.prototype.applyOperation = function (operation) {
         console.log('Client.applyOperaion is called ! The operation from server is: ');
         operation.displayOps();
+        this.doc = $('#editor').val();
         this.doc = operation.apply(this.doc);
         $('#editor').val(this.doc);
     };

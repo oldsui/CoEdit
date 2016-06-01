@@ -36,7 +36,7 @@ and open the template in the editor.
 
 		$(document).ready(function () {
             client = new Client(myname, '',  0);
-			socket = io.connect('http://169.234.90.168:3000');
+			socket = io.connect('http://localhost:3000');
 
 
             // notice server of this new client and start initialization
@@ -93,7 +93,7 @@ and open the template in the editor.
 
 
             // when a key is released, create an operation for it and invoke client.applyClient(operation)
-			$('#editor').on('keyup',function(key){
+			$('#editor').on('keydown',function(key){
                 console.log('A key is pressed !');
 
 				client.setDoc($('#editor').val());
@@ -106,13 +106,13 @@ and open the template in the editor.
                     // if delete a char
 					if(key.keyCode == 8 || key.keyCode == 46) // 8 == BackSpace, 46 == Delete
                     {
-                         op.retain(position).delete(1).retain(strLen-position);
+                         op.retain(position+1).delete(1).retain(strLen-position);
 					}
                     // if insert a char
 					else
 					{
 						 value = String.fromCharCode(key.keyCode).toLowerCase();
-                         op.retain(position-1).insert(value).retain(strLen-position);
+                         op.retain(position).insert(value).retain(strLen-position);
 					}
 
                     console.log('This key creates an op: ');
@@ -128,12 +128,6 @@ and open the template in the editor.
 
 
 			});
-
-
-
-
-
-
 
 
 		});

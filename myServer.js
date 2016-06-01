@@ -45,17 +45,9 @@ app.post('/editing_page',function(req, res){
 
 io.on('connection', function(socket){
 
-
-    // test Operation class
-    var t = new Operation();
-
-    t.displayOps();
-    console.log(t.initLen);
-    console.log(t.finalLen);
-    t.insert('abcdefg').retain(10);
-
-
     console.log('a new connection detected');
+
+
     socket.on('newClient', function(data){
 		console.log("A new client asks for the latest version! ");
         // send the latest version number and text to the new client
@@ -68,9 +60,6 @@ io.on('connection', function(socket){
     // receiving operations from a sender data:  {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid}
 	socket.on('newClientOp', function(data){
 
-        for (var i = 0; i < operations.length; i++) {
-            operations[i].displayOps();
-        }
 
 		var sender_version = data.v;            // latest version received by the sender from the server
 		var sender = data.sender;
@@ -88,7 +77,7 @@ io.on('connection', function(socket){
             operation = operation.constructor.transform(operation, previousOperations[i])[0];
         }
 
-
+        console.log('text before applying op is: '+text);
 
         // apply the transformed operation on the document.
         text = operation.apply(text);
@@ -96,7 +85,7 @@ io.on('connection', function(socket){
         operations.push(operation);
         version += 1;
 
-		console.log("current text is : " + text);
+		console.log("text after applying op is : " + text);
 
 
         // after updating server, broadcast this latest operation to all clients
