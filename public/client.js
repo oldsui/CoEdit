@@ -177,13 +177,12 @@
         return synchronized_;
     };
 
-
-
     AwaitingConfirm.prototype.resend = function (client) {
         // The confirm didn't come because the client was disconnected.
         // Now that it has reconnected, we resend the outstanding operation.
         client.sendOperation(this.outstanding);
     };
+
 
 
 
