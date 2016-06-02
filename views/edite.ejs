@@ -34,7 +34,7 @@ and open the template in the editor.
 		$(document).ready(function () {
 
             // ========== initialization ==========
-            socket = io.connect('http://169.234.11.161:3000');
+            socket = io.connect('http://localhost:3000');
 
             client = new Client(myname, '',  0);                        // default constructor
 
@@ -84,9 +84,15 @@ and open the template in the editor.
 				// when the incoming op is not the op that the client just sent to server, simply apply it to the client's document
 				else {
 					console.log('The received operaiton is not previously sent by me ! So perform applyServer() !');
-					client.applyServer(operation);
-					// display modified text
-					$('#editor').val(client.doc);
+					try{
+						client.applyServer(operation);
+						$('#editor').val(client.doc);
+					}
+					catch (err) {
+						alert('ApplyServer failed, re-sync with server !');
+						socket.emit('newClient', {uid: myname});
+					}
+
 				}
 
 

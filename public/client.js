@@ -83,7 +83,13 @@
     
     Client.prototype.sendOperation = function (operation) {
         console.log('sendOperation is called trying to execute! ');
-        socket.emit('newClientOp', {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid});
+        try {
+            socket.emit('newClientOp', {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid});
+        }
+        catch (err) {
+            console.log('SendOperation failed !');
+            console.log(err);
+        }
     };
 
     Client.prototype.applyOperation = function (operation) {
@@ -201,8 +207,14 @@
 
     AwaitingWithBuffer.prototype.applyClient = function (client, operation) {
         // Compose the user's changes onto the buffer
-        var newBuffer = this.buffer.compose(operation);
-        console.log('AwaitingWithBuffer -> AwaitingWithBuffer');
+        try {
+            var newBuffer = this.buffer.compose(operation);
+        }
+        catch (err) {
+            console.log('applyClient failed ! Ignored this operation ! ');
+            return this;
+        }
+        console.log('Successful appllyClient: AwaitingWithBuffer -> AwaitingWithBuffer');
         return new AwaitingWithBuffer(this.outstanding, newBuffer);
     };
 
