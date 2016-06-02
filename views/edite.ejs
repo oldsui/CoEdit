@@ -106,10 +106,11 @@ and open the template in the editor.
 				var op = new Operation();
 				var strLen =  $('#editor').val().length;
 				var position = $('#editor').prop("selectionStart");
+				var value;
 
 
-
-				// if delete a char: 8 == BackSpace,
+				// ======================== delete a char ========================
+				// 8 == BackSpace,
 				if (key.keyCode == 8 ) {
 					if (position > 0) {								// if backspace is pressed at the start of the string, do nothing
 						console.log(position-1, strLen-position);
@@ -119,7 +120,8 @@ and open the template in the editor.
 						client.applyClient(op);
 					}
 				}
-				//  if delete a char: 46 == Delete
+
+				// 46 == Delete
 				else if (key.keyCode == 46) {
 					if (position < strLen) {					// when delete is pressed at the end of the string, do nothing
 						op.retain(position).delete(1).retain(strLen - position - 1);
@@ -128,7 +130,8 @@ and open the template in the editor.
 						client.applyClient(op);
 					}
 				}
-				// if insert a char
+
+				// ======================== insert a char ====================================
 				// 9:tab; 13: enter; 48-57: 0-9; 65-90: a-z;
 				else if(key.keyCode == 9 || key.keyCode == 13 || (key.keyCode > 46 && key.keyCode < 91)) {
                     value = String.fromCharCode(key.keyCode).toLowerCase();
@@ -139,6 +142,7 @@ and open the template in the editor.
                     //input.selectionStart = 3;
                     //input.selectionEnd = 3;
 				}
+
 				// 32: space
 				else if (key.keyCode == 32) {
                     op.retain(position).insert(' ').retain(strLen-position);
@@ -147,6 +151,47 @@ and open the template in the editor.
                     client.applyClient(op);
 				}
 
+				else if (key.keyCode >= 186) {
+					// 186: ;
+					if (key.keyCode == 186) {
+						value = ';';
+					}
+					// 187: =
+					else if (key.keyCode == 187) {
+						value = '=';
+					}
+					// keycode 188:, 189: -, 190: .; 191: /
+					// ascii:  44,   45,     46,     47
+					else if (key.keyCode >= 188 && key.keyCode <= 191) {
+						value = String.fromCharCode(key.keyCode -144).toLowerCase();
+					}
+					// 192: `
+					else if (key.keyCode == 192) {
+						value = '`';
+					}
+					// keycode: 219: [, 220: \, 221: ],
+					// ascii: 	91
+					else if (key.keyCode >= 219 && key.keyCode <= 221) {
+						value = String.fromCharCode(key.keyCode -128).toLowerCase();
+					}
+					// keycode: 222: '
+					else if (key.keyCode == 222) {
+						value = String.fromCharCode('').toLowerCase();
+					}
+
+		
+
+
+					op.retain(position).insert(value).retain(strLen-position);
+					console.log('This key creates an op: ');
+					op.displayOps();
+					client.applyClient(op);
+				}
+
+
+
+
+				// ======================== other ========================
                 // symbols and control keys
                 else {
                     //input.selectionStart = 3;
