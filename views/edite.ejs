@@ -89,7 +89,7 @@ and open the template in the editor.
 						$('#editor').val(client.doc);
 					}
 					catch (err) {
-						alert('ApplyServer failed, re-sync with server !');
+						console.log('ApplyServer failed, re-sync with server !');
 						socket.emit('newClient', {uid: myname});
 					}
 
@@ -197,14 +197,9 @@ and open the template in the editor.
 				}
 
 
-
-
 				// ======================== other ========================
                 // symbols and control keys
                 else {
-                    //input.selectionStart = 3;
-                    //input.selectionEnd = 3;
-
                     console.log('Pressed key is not yet supported !');
                 }
 
@@ -213,9 +208,6 @@ and open the template in the editor.
 
 
 		});
-
-
-
 
     </script>
     
