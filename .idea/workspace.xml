@@ -37,8 +37,8 @@
       <file leaf-file-name="edite.ejs" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/views/edite.ejs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1635">
-              <caret line="159" column="24" selection-start-line="159" selection-start-column="24" selection-end-line="159" selection-end-column="24" />
+            <state relative-caret-position="540">
+              <caret line="186" column="34" selection-start-line="186" selection-start-column="34" selection-end-line="186" selection-end-column="34" />
               <folding />
             </state>
           </provider>
@@ -769,8 +769,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/views/edite.ejs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1635">
-          <caret line="159" column="24" selection-start-line="159" selection-start-column="24" selection-end-line="159" selection-end-column="24" />
+        <state relative-caret-position="540">
+          <caret line="186" column="34" selection-start-line="186" selection-start-column="34" selection-end-line="186" selection-end-column="34" />
           <folding />
         </state>
       </provider>
