@@ -68,17 +68,17 @@ io.on('connection', function(socket){
 
     // when the server receives an operation from a client
     // data format:  {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid}
-	socket.on('newClientOp', function(data){
+	socket.on('newClientOp', function(data) {
 
-		var sender_version = data.v;            // latest version received by the sender from the server
-		var sender = data.sender;               // sender name
+        var sender_version = data.v;            // latest version received by the sender from the server
+        var sender = data.sender;               // sender name
 
         var operation = new Operation(data.ops, data.initLen, data.finalLen);
 
 
         // for debug use
-        console.log('sender: '+sender);
-        console.log('version: '+sender_version);
+        console.log('sender: ' + sender);
+        console.log('version: ' + sender_version);
         operation.displayOps();
 
 
@@ -91,11 +91,16 @@ io.on('connection', function(socket){
         }
 
         // for debug use
-        console.log('text before applying op is: '+text);
+        console.log('text before applying op is: ' + text);
 
-        
-        // apply the transformed operation on the document.
-        text = operation.apply(text);
+        try {
+            // apply the transformed operation on the document.
+            text = operation.apply(text);
+        }
+        catch (err) {
+            console.log('the operation from  '+sender +' is not compatible, so he is forced to re-sync !' );
+            io.sockets.emit('initClient', {uid:sender, v:version, txt: text});
+        }
         // Store operation in history and increment version
         operations.push(operation);
         version += 1;

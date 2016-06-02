@@ -61,7 +61,7 @@ module.exports = Operation;
 	    if (typeof n !== 'number') {
 	      throw new Error("Retain expects a integer >= 0!");
 	    }
-	    if (n === 0) { 
+	    if (n <= 0) {
 	    	return this; 
 	    }
 	    this.initLen += n;
@@ -116,7 +116,7 @@ module.exports = Operation;
         if (typeof n !== 'number') {
             throw new Error("delete expects an integer >= 0");
         }
-        if (n === 0) {
+        if (n <= 0) {
             return this; 
         }
 
