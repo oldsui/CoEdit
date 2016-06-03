@@ -212,6 +212,8 @@
         }
         catch (err) {
             console.log('applyClient failed ! Ignored this operation ! ');
+			//socket.emit('newClient', {uid: client.uid});
+			location.reload();
             return this;
         }
         console.log('Successful appllyClient: AwaitingWithBuffer -> AwaitingWithBuffer');
