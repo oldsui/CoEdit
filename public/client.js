@@ -72,7 +72,7 @@
     };
 
 
-    // ???
+    // 
     Client.prototype.serverReconnect = function () {
         if (typeof this.state.resend === 'function') { this.state.resend(this); }
     };
