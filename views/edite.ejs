@@ -11,6 +11,7 @@ and open the template in the editor.
 	<script src="operation.js" type="text/javascript" ></script>
 	<script src="selection.js" type="text/javascript" ></script>
 	<script src="client.js" type="text/javascript" ></script>
+	<script src="undomanager.js" type="text/javascript" ></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script> 
     <!--<script type="text/javascript" src="jquery.js"></script>  -->
     <script src="/socket.io/socket.io.js"></script>
@@ -20,8 +21,9 @@ and open the template in the editor.
 <body>
     <h1> Username: <%=UID%> </h1>
 	<h1>Document ID: <%=DOCID%> </h1>
+	<h1>Active Clients:<span id = 'activeClietns'></span> </h1>
     <textarea id="editor" style = "margin: 50px; width: 90%; height: 500px;"></textarea>
-
+	
     <script>
 
 		var myname = '<%=UID%>';
@@ -29,21 +31,34 @@ and open the template in the editor.
 		var socket;                         // global variable, to be accessed in client.js
         var input = document.getElementById ("editor");
 		console.log('uid: ' + myname);
-
-
+        var undomanager;
+		var ctrldown = false;
+		var inverse = new Operation();
 
 		$(document).ready(function () {
 
             // ========== initialization ==========
-            socket = io.connect('http://169.234.31.228:3000');
+            socket = io.connect('http://169.234.18.87:3000');
 
             client = new Client(myname, '',  0);                        // default constructor
+			
+			undomanager = new UndoManager(10);
 
             // notify server of this new client and requesting the latest text
 			socket.emit('newClient', {uid: myname});
 
+
+
+			socket.on('updateClients', function(data) {
+				var clients = data.activeClients.join(', ');
+				$("#activeClietns").text(clients);
+        	});
+
 			// initialization with the text received from server
 			socket.on('initClient', function(data) {					// data {uid:data.uid, v:version, txt: text}
+
+				var clients = data.activeClients.join(', ');
+				$("#activeClietns").text(clients);
 
 				if (data.uid == myname) {
 					client.setDoc(data.txt);
@@ -55,6 +70,20 @@ and open the template in the editor.
 					console.log('A client just joined in: '+data.uid+'; his version is : V'+data.v);
 				}
 
+			});
+			
+			socket.on('recover', function(data){
+			    if(data.uid == myname)
+				{
+				    var clients = data.activeClients.join(', ');
+				    $("#activeClietns").text(clients);
+					client.setDoc(data.txt);
+					client.setVersion(data.v);					
+					$('#editor').val(data.txt);
+					setSelectionRange(input, data.cursor, data.cursor);
+					console.log('recover succeeds! ');
+				}
+			
 			});
 
 
@@ -85,9 +114,20 @@ and open the template in the editor.
 				// when the incoming op is not the op that the client just sent to server, simply apply it to the client's document
 				else {
 					console.log('The received operaiton is not previously sent by me ! So perform applyServer() !');
+					var start = $('#editor').prop("selectionStart");
+				    var end = $('#editor').prop("selectionEnd");
+				    /*
+      				try{
+					
+					    // transform undo redo!
+						undomanager.transform(operation);					
+					}
+					catch(err)
+					{
+					    console.log('Undo transformation error! ' + err);
+					}*/
 					try{
-   						var start = $('#editor').prop("selectionStart");
-						var end = $('#editor').prop("selectionEnd");
+					
 						console.log('original range is : ' + start + ' ' + end);
 						var range = new Range(start, end);
 
@@ -95,13 +135,14 @@ and open the template in the editor.
 						range = range.transform(operation);
 						$('#editor').val(client.doc);
 						
+						//input.setSelectionRange(range.anchor, range.head);
 						setSelectionRange(input, range.anchor, range.head);
 						console.log('current range is : ' + range.anchor + ' ' + range.head);
 						
 					}
 					catch (err) {
-						console.log('ApplyServer failed, re-sync with server !');						
-						socket.emit('newClient', {uid: myname});
+						console.log('ApplyServer failed, re-sync with server !' + err);						
+						socket.emit('reJoin', {uid: myname, cursor: start});
 					}
 
 				}
@@ -118,13 +159,25 @@ and open the template in the editor.
             // when a key is released, create an operation for it and invoke client.applyClient(operation)
             // chrome follow IE keycode: http://unixpapa.com/js/key.html
 			// keycode: https://css-tricks.com/snippets/javascript/javascript-keycodes/
-			$('#editor').on('keydown',function(key) {
+			$('#editor').on('keyup', function(key)
+			{
+			    if(key.keyCode == 17)
+				{
+				    console.log('Ctrl is up');
+					ctrldown = false;
+				}
+			});
+			
+			
+			
+			$('#editor').on('keydown',function(key) 
+			{
                 console.log('A key is pressed !');
 				var op = new Operation();
 				var strLen =  $('#editor').val().length;
 				var position = $('#editor').prop("selectionStart");
 				var value;
-
+                client.doc = $('#editor').val();
 
 				// ======================== delete a char ========================
 				// 8 == BackSpace,
@@ -134,7 +187,15 @@ and open the template in the editor.
 						op.retain(position-1).delete(1).retain(strLen-position);
 						console.log('This key creates an op: ');
 						op.displayOps();
+						//var c = $('#editor').val().charAt(position-1);
+						//alert('backspace:' + c);
 						client.applyClient(op);
+						
+						inverse = op.invert(client.doc);
+						console.log('Inverse operation is~~~~~ ');
+						inverse.displayOps();
+						undomanager.add(inverse, false);
+						
 					}
 				}
 
@@ -145,19 +206,44 @@ and open the template in the editor.
 						console.log('This key creates an op: ');
 						op.displayOps();
 						client.applyClient(op);
+						
+						inverse = op.invert(client.doc);
+						console.log('Inverse operation is~~~~~ ');
+						inverse.displayOps();
+						undomanager.add(inverse, false);
 					}
 				}
 
 				// ======================== insert a char ====================================
 				// 9:tab; 13: enter; 48-57: 0-9; 65-90: a-z;
 				else if(key.keyCode == 9 || key.keyCode == 13 || (key.keyCode > 46 && key.keyCode < 91)) {
-                    value = String.fromCharCode(key.keyCode).toLowerCase();
-                    op.retain(position).insert(value).retain(strLen-position);
-					console.log('This key creates an op: ');
-                    op.displayOps();
-                    client.applyClient(op);
-                    //input.selectionStart = 3;
-                    //input.selectionEnd = 3;
+				    if(ctrldown == true && key.keyCode == 90) // Ctrl + Z undo
+					{
+					    console.log('Ctrl + Z!');
+						event.returnValue = false;
+						undomanager.performUndo();						
+					}
+					else if(ctrldown == true && key.keyCode == 89)  // Ctrl + Y redo
+					{
+					    console.log('Ctrl + Y!');
+						event.returnValue = false;
+						undomanager.performRedo();						
+					}
+					else
+					{
+					    value = String.fromCharCode(key.keyCode).toLowerCase();
+						op.retain(position).insert(value).retain(strLen-position);
+						console.log('This key creates an op: ');
+						op.displayOps();
+						client.applyClient(op);	
+
+                        inverse = op.invert(client.doc);
+						console.log('Inverse operation is~~~~~ ');
+						inverse.displayOps();
+						undomanager.add(inverse, false);
+						
+					}
+                    
 				}
 
 				// 32: space
@@ -166,6 +252,11 @@ and open the template in the editor.
 					console.log('This key creates an op: ');
                     op.displayOps();
                     client.applyClient(op);
+					
+					inverse = op.invert(client.doc);
+					console.log('Inverse operation is~~~~~ ');
+					inverse.displayOps();
+					undomanager.add(inverse, false);
 				}
 
 						
@@ -195,7 +286,7 @@ and open the template in the editor.
 					}
 					// keycode: 222: '
 					else if (key.keyCode == 222) {
-						value = String.fromCharCode("'").toLowerCase();
+						value = String.fromCharCode(39).toLowerCase();
 					}
 
 
@@ -205,9 +296,18 @@ and open the template in the editor.
 					console.log('This key creates an op: ');
 					op.displayOps();
 					client.applyClient(op);
+					
+					inverse = op.invert(client.doc);
+					console.log('Inverse operation is~~~~~ ');
+					inverse.displayOps();
+					undomanager.add(inverse, false);
 				}
 
-
+                else if(key.keyCode == 17)
+				{
+				    console.log('Ctrl is down');
+					ctrldown = true;
+				}
 
 
 				// ======================== other ========================
@@ -215,7 +315,7 @@ and open the template in the editor.
                 else {
                     //input.selectionStart = 3;
                     //input.selectionEnd = 3;
-
+                      
                     console.log('Pressed key is not yet supported !');
                 }
 
@@ -234,12 +334,12 @@ and open the template in the editor.
 			
 			function setSelectionRange(inp, selectionStart, selectionEnd) {
 				if (inp.setSelectionRange) {
-				    console.log("select 1");
+				    console.log("select 1~~~~~~~~~~~~~");
 					inp.focus();
 					inp.setSelectionRange(selectionStart, selectionEnd);
 				}
 				else if (inp.createTextRange) {
-				    console.log("select 2");
+				    console.log("select 2~~~~~~~~~~~~~~~");
 					var range = inp.createTextRange();
 					range.collapse(true);
 					range.moveEnd('character', selectionEnd);
@@ -251,6 +351,7 @@ and open the template in the editor.
 			function setCaretToPos (inp, pos) {
 			    setSelectionRange(inp, pos, pos);
 			}
+			
 
 
 

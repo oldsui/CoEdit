@@ -55,12 +55,15 @@
     // exact procedure will be called by the state that the client is in
 
     // when client mutates the local document
-    Client.prototype.applyClient = function (operation) {
+    Client.prototype.applyClient = function (operation) 
+	{
+				
         this.setState(this.state.applyClient(this, operation));             // current state will invoke corresponding procedure
     };
 
     // when RECEIVING an operation from the server
     Client.prototype.applyServer = function (operation) {
+		
         this.version ++;
         this.setState(this.state.applyServer(this, operation));
     };
@@ -72,7 +75,7 @@
     };
 
 
-    // 
+    // ???
     Client.prototype.serverReconnect = function () {
         if (typeof this.state.resend === 'function') { this.state.resend(this); }
     };
@@ -82,9 +85,17 @@
     // low-level functions that will be invoked by the states
     
     Client.prototype.sendOperation = function (operation) {
+		// transform undo redo!
+		/*try{
+		    undomanager.transform(operation);	
+		}catch(err)
+		{
+			console.log('error in undo transformation in sendOperation');
+		}*/
         console.log('sendOperation is called trying to execute! ');
         try {
-            socket.emit('newClientOp', {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid});
+			var start = $('#editor').prop("selectionStart");
+            socket.emit('newClientOp', {ops:operation.ops, initLen:operation.initLen, finalLen:operation.finalLen, v:this.version, sender: this.uid, cursor: start});
         }
         catch (err) {
             console.log('SendOperation failed !');
@@ -93,11 +104,18 @@
     };
 
     Client.prototype.applyOperation = function (operation) {
+		// transform undo redo!
+		try{
+		    undomanager.transform(operation);	
+		}catch(err)
+		{
+			console.log('error in undo transformation in applyOperaion');
+		}
         console.log('Client.applyOperaion is called ! The operation from server is: ');
         operation.displayOps();
         this.doc = $('#editor').val();
         this.doc = operation.apply(this.doc);
-        $('#editor').val(this.doc);
+        //$('#editor').val(this.doc);
     };
 
 
