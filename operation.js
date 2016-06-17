@@ -466,8 +466,10 @@ module.exports = Operation;
 			}
 		}
 
-		this.ops = operation.ops;
-		this.updateFinalLen();
+		//this.ops = operation.ops;
+		//this.updateFinalLen();
+		operation.updateFinalLen();
+		return operation;
 	};
 
 
@@ -535,6 +537,25 @@ module.exports = Operation;
 			opList +=  this.ops[i] + " ";
 		}
 		console.log(opList);
+	}
+	
+	Operation.prototype.invert = function(str) {
+        var strIndex = 0;
+		var inverse = new Operation();
+		var ops = this.ops;
+		for (var i = 0, l = ops.length; i < l; i++) {
+		  var op = ops[i];
+		  if (isRetain(op)) {
+			inverse.retain(op);
+			strIndex += op;
+		  } else if (isInsert(op)) {
+			inverse['delete'](op.length);
+		  } else { // delete op
+			inverse.insert(str.slice(strIndex, strIndex - op));
+			strIndex -= op;
+		  }
+		}
+		return inverse;
 	}
 
 

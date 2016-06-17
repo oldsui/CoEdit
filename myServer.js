@@ -23,10 +23,10 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 // data structures the server is maintaining
 var version = 0;                                        // version of last commited text
-var text = "0123456789";                                // last commited text in the edit area
+var text = "";                                          // last commited text in the edit area
 var operations = [];                                    // operation history
-
-
+var clients = [];                                       // online clients
+var allSockets = [];                                    // all sockets connected
 
 
 
@@ -57,13 +57,39 @@ io.on('connection', function(socket){
 
 
     // when a newly joined in client notifies the server, asking for the latest text for initialization
-    socket.on('newClient', function(data){
+    socket.on('newClient', function(sender){
 		console.log("A new client asks for the latest version! ");
-        // send the latest version number and text to the new client
-		io.sockets.emit('initClient', {uid:data.uid, v:version, txt: text});
+
+
+
+        if( clients.indexOf(sender.uid) == -1 && allSockets.indexOf(socket) == -1 ) {
+            console.log('pushed ' +sender.uid);
+            clients.push(sender.uid);
+            allSockets.push(socket);
+        }
+
+		io.sockets.emit('initClient', {uid:sender.uid, v:version, txt: text, activeClients:clients});
+	})
+	
+	socket.on('reJoin', function(data){
+		console.log("reJoin happens~~~~~~~~~");
+		io.sockets.emit('recover', {uid: data.uid, cursor: data.cursor, v: version, txt: text, activeClients: clients});
 	})
 
 
+    socket.on('disconnect', function() {
+        console.log('Someone quitted. ');
+        
+        var index = allSockets.indexOf(socket);
+        if (index > -1) {
+            var client = clients[index];
+            console.log('Client '+client+' has logged off. ');
+            allSockets.splice(index, 1);
+            clients.splice(index, 1);
+            io.sockets.emit('updateClients', {activeClients:clients});
+
+        }
+    })
 
 
     // when the server receives an operation from a client
@@ -99,7 +125,7 @@ io.on('connection', function(socket){
         }
         catch (err) {
             console.log('the operation from  '+sender +' is not compatible, so he is forced to re-sync !' );
-            io.sockets.emit('initClient', {uid:sender, v:version, txt: text});
+            io.sockets.emit('recover', {uid: sender, cursor: data.cursor,  v:version, txt: text, activeClients: clients});
         }
         // Store operation in history and increment version
         operations.push(operation);
