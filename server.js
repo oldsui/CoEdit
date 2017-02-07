@@ -8,7 +8,6 @@ var io = require('socket.io')(http);
 var Operation = require('./operation.js');
 
 
-
 app.set('view engine', 'ejs');
 app.locals.resoucePath = "/";
 
@@ -17,7 +16,6 @@ app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
-
 
 
 
@@ -43,7 +41,7 @@ app.post('/editing_page',function(req, res){
   var uid = req.body.username;
   var docid= req.body.documentID;
 
-  res.render('edite', {UID: uid, DOCID: docid});
+  res.render('edite', {UID: uid, DOCID: docid, SYSPORT: process.env.PORT});
 
 });
 
@@ -145,7 +143,16 @@ io.on('connection', function(socket){
 
 });
 
-http.listen(process.env.PORT ||3000, function(){
+http.listen(process.env.PORT, function(){
   console.log('listening on *: $PORT or 3000');
 });
+
+/*
+ Heroku dynamically assigns your app a port, so you can't set the port to a fixed number. 
+ Heroku adds the port to the env, so you can pull it from there. Switch your listen to this:
+
+    .listen(process.env.PORT || 5000)
+
+ That way it'll still listen to port 5000 when you test locally, but it will also work on Heroku.
+ */
 

@@ -19,7 +19,7 @@ and open the template in the editor.
     
 </head>
 <body>
-    <h1> Username: <%=UID%> </h1>
+    <h1>Username: <%=UID%> </h1>
 	<h1>Document ID: <%=DOCID%> </h1>
 	<h1>Active Clients:<span id = 'activeClietns'></span> </h1>
     <textarea id="editor" style = "margin: 50px; width: 90%; height: 500px;"></textarea>
@@ -39,7 +39,7 @@ and open the template in the editor.
 
             // ========== initialization ==========
             //socket = io.connect('http://localhost:3000');
-            socket = io.connect('https://mighty-lake-37832.herokuapp.com/');
+            socket = io.connect('http://localhost:' + '<%=SYSPORT%>');
             client = new Client(myname, '',  0);                        // default constructor
 			
 			undomanager = new UndoManager(10);
