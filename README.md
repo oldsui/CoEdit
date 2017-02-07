@@ -4,8 +4,8 @@
 
 Updated: 
 
-added support of UNDO/REDO.
-
+Added support of UNDO/REDO.
+but only for windows: Ctrl + Z/Y: UNDO/REDO
 
 TODOs:
 
