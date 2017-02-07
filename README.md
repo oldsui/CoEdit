@@ -1,5 +1,7 @@
 
-#A real-time collaborative editor similar to Google Doc is built.
+#Real-time collaborative editor similar to Google Doc is built.
+
+A prototype is hosted on heroku: https://mighty-lake-37832.herokuapp.com/
 
 
 Updated: 
