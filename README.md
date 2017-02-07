@@ -1,7 +1,14 @@
 
-#Real-time collaborative editor similar to Google Doc is built.
+#Real-time collaborative editor similar to Google Doc is built. 
 
-A prototype is hosted on heroku: https://mighty-lake-37832.herokuapp.com/
+References:
+
+https://operational-transformation.github.io/index.html
+
+http://www.codecommit.com/blog/java/understanding-and-applying-operational-transformation
+
+
+A prototype is deployed on heroku: https://mighty-lake-37832.herokuapp.com/
 
 
 Updated: 
@@ -9,8 +16,14 @@ Updated:
 added support of UNDO/REDO.
 
 
-PS:
+TODOs:
 
-Not all keys on keyboard have been supported, e.g. 'shift' not supported yet.
+1. Database for different docs. Currently only one doc and the doc number is meaningless.
 
-However, it's only some tedious mapping work.
+2. Map all the keys. E.g. 'shift' is not supported yet. However, it's only some tedious mapping work.
+
+3. Selection transform, copy, paste, etc.
+
+
+
+
