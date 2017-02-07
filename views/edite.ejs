@@ -41,7 +41,8 @@ and open the template in the editor.
 
             // ========== initialization ==========
             //socket = io.connect('http://localhost:3000');
-            socket = io.connect('http://localhost:' + '<%=SYSPORT%>');
+            //socket = io.connect('http://localhost:' + '<%=SYSPORT%>');
+            socket = io.connect('https://mighty-lake-37832.herokuapp.com/');
             client = new Client(myname, '',  0);                        // default constructor
 			
 			undomanager = new UndoManager(10);
