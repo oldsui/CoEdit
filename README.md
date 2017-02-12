@@ -20,6 +20,8 @@ TODOs:
 
 References:
 
+https://github.com/Operational-Transformation/ot.js
+
 https://operational-transformation.github.io/index.html
 
 http://www.codecommit.com/blog/java/understanding-and-applying-operational-transformation
